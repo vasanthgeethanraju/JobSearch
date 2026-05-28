@@ -1,12 +1,20 @@
-# Job Search
+# Geethan's Job Search
 
-A private workspace for tracking and building out my personal job search process.
+A personal job search tool built to quickly search across multiple job platforms (Greenhouse, Lever, Ashby, and more) using Google's site search — filtered by job title and time range.
 
-## What's this?
+## What it does
 
-This repo is a work-in-progress: documenting my job search journey, tools I'm building, 
-applications I'm tracking, and anything else that helps me stay organized and focused.
+- Enter a job title (e.g. "Front End", "Product Designer")
+- Pick a time range (Past 24 Hours, Past Week, etc.)
+- Select which job platforms to search
+- Hit Start — opens a targeted Google search across all selected platforms
+
+## Tech Stack
+
+- React + TypeScript
+- Vite
+- Tailwind CSS
 
 ## Status
 
-🔨 In progress
+🔨 In progress — building from scratch as a learning project
