@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import type { Job } from './types'
-import { fetchJobs } from './api'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -20,6 +18,12 @@ const TIME_MAP: Record<string, string> = {
   'Past Month': 'qdr:m',
 }
 
+function buildUrl(jobTitle: string, time: string, sites: string[]): string {
+  const query = `"${jobTitle}" ${sites.map(s => `site:${s}`).join(' OR ')}`
+  const tbs = TIME_MAP[time]
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbs=${tbs}`
+}
+
 function App() {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('theme') as Theme) || 'system'
@@ -27,8 +31,6 @@ function App() {
   const [jobTitle, setJobTitle] = useState('')
   const [time, setTime] = useState('Past 24 Hours')
   const [selected, setSelected] = useState<string[]>([])
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const root = document.documentElement
@@ -50,13 +52,10 @@ function App() {
     )
   }
 
-  async function handleStart() {
-    if (!jobTitle) return
-    setLoading(true)
-    setJobs([])
-    const results = await fetchJobs(jobTitle)
-    setJobs(results)
-    setLoading(false)
+  function handleStart() {
+    if (!jobTitle || selected.length === 0) return
+    const url = buildUrl(jobTitle, time, selected)
+    window.open(url, '_blank')
   }
 
   return (
@@ -124,43 +123,12 @@ function App() {
 
         <button
           onClick={handleStart}
-          disabled={loading}
-          className="bg-black dark:bg-white text-white dark:text-black text-xl font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+          className="bg-black dark:bg-white text-white dark:text-black text-xl font-bold py-3 rounded-lg transition-colors"
         >
-          {loading ? 'Searching...' : 'Start'}
+          Start
         </button>
 
       </div>
-
-      {/* Job Results */}
-      {jobs.length > 0 && (
-        <div className="w-full max-w-xl mt-10 flex flex-col gap-4">
-          <h2 className="text-2xl font-bold">{jobs.length} Jobs Found</h2>
-          {/* {jobs.map(job => (
-            <div
-              key={job.id}
-              className="border border-black dark:border-white rounded-lg px-5 py-4"
-            >
-              <p className="text-lg font-semibold">{job.title}</p>
-              <p className="text-gray-500">{job.company_name}</p>
-              <p className="text-gray-400 text-sm">{job.candidate_required_location}</p>
-            </div>
-          ))} */}
-          {jobs.map(job => (
-            <div
-              key={job.job_id}
-              className="border border-black dark:border-white rounded-lg px-5 py-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
-            >
-              <p className="text-lg font-semibold">{job.job_title}</p>
-              <p className="text-gray-500">{job.employer_name}</p>
-              <p className="text-gray-400 text-sm">
-                {job.job_is_remote ? 'Remote' : `${job.job_city ?? ''}, ${job.job_country ?? ''}`}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-
     </div>
   )
 }
