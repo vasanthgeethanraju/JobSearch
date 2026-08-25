@@ -12,5 +12,5 @@ export async function fetchJobs(searchTerm: string): Promise<Job[]> {
 
   const data = await response.json()
   console.log("api response", data);
-  return data.data ?? []
+  return data.data.jobs ?? []
 }
