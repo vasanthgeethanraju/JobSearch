@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import CreatableSelect from 'react-select/creatable'
+import { LOCATIONS } from './locations.ts'
+import type { LocationOption } from './locations.ts'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -18,8 +21,10 @@ const TIME_MAP: Record<string, string> = {
   'Past Month': 'qdr:m',
 }
 
-function buildUrl(jobTitle: string, time: string, sites: string[]): string {
-  const query = `"${jobTitle}" ${sites.map(s => `site:${s}`).join(' OR ')}`
+function buildUrl(jobTitle: string, location: string, time: string, sites: string[]): string {
+  const sitePart = `(${sites.map(s => `site:${s}`).join(' OR ')})`
+  const locationPart = location.trim() ? `"${location.trim()}"` : ''
+  const query = [`"${jobTitle}"`, locationPart, sitePart].filter(Boolean).join(' ')
   const tbs = TIME_MAP[time]
   return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbs=${tbs}`
 }
@@ -29,6 +34,7 @@ function App() {
     () => (localStorage.getItem('theme') as Theme) || 'system'
   )
   const [jobTitle, setJobTitle] = useState('')
+  const [location, setLocation] = useState<LocationOption | null>(null)
   const [time, setTime] = useState('Past 24 Hours')
   const [selected, setSelected] = useState<string[]>([])
 
@@ -54,7 +60,7 @@ function App() {
 
   function handleStart() {
     if (!jobTitle || selected.length === 0) return
-    const url = buildUrl(jobTitle, time, selected)
+    const url = buildUrl(jobTitle, location?.value ?? '', time, selected)
     window.open(url, '_blank')
   }
 
@@ -88,6 +94,35 @@ function App() {
           value={jobTitle}
           onChange={e => setJobTitle(e.target.value)}
           className="bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white text-xl px-4 py-3 rounded-lg outline-none placeholder-gray-400"
+        />
+
+        <CreatableSelect
+          options={LOCATIONS}
+          value={location}
+          onChange={option => setLocation(option)}
+          isClearable
+          unstyled
+          placeholder="Location (optional) — pick or type a city"
+          formatCreateLabel={input => `Use "${input}"`}
+          classNames={{
+            control: () =>
+              'bg-white dark:bg-black border border-black dark:border-white rounded-lg px-4 py-3 text-xl',
+            placeholder: () => 'text-gray-400',
+            indicatorsContainer: () => 'gap-2 text-gray-400',
+            clearIndicator: () => 'cursor-pointer hover:text-black dark:hover:text-white',
+            dropdownIndicator: () => 'cursor-pointer hover:text-black dark:hover:text-white',
+            menu: () =>
+              'mt-2 bg-white dark:bg-black border border-black dark:border-white rounded-lg overflow-hidden z-10',
+            option: ({ isFocused, isSelected }) =>
+              `px-4 py-2 text-lg cursor-pointer ${
+                isSelected
+                  ? 'bg-black dark:bg-white text-white dark:text-black'
+                  : isFocused
+                    ? 'bg-gray-100 dark:bg-gray-900'
+                    : ''
+              }`,
+            noOptionsMessage: () => 'px-4 py-2 text-gray-400',
+          }}
         />
 
         <select
