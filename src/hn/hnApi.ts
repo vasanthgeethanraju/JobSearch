@@ -27,11 +27,12 @@ export function parseThreadId(input: string): number | null {
 // One request returns the whole comment tree; only top-level comments are job posts
 export async function fetchThreadJobs(threadId: number): Promise<{ title: string; jobs: HNJob[] }> {
   const response = await fetch(`${ALGOLIA}/items/${threadId}`)
-  if (!response.ok) throw new Error(`Couldn't load thread ${threadId} (${response.status})`)
+  if (response.status === 404) throw new Error(`No HN thread with id ${threadId}`)
+  if (!response.ok) throw new Error(`Couldn't load thread ${threadId} — HN returned ${response.status}`)
   const data = await response.json()
+  if (data.type !== 'story') throw new Error(`HN item ${threadId} is a ${data.type}, not a thread`)
   const jobs = (data.children as AlgoliaComment[])
     .map(parseJob)
     .filter((job): job is HNJob => job !== null)
-    .sort((a, b) => b.postedAt.localeCompare(a.postedAt))
   return { title: data.title, jobs }
 }

@@ -12,6 +12,7 @@ export type RolePreset = keyof typeof ROLE_PRESETS
 export type WorkType = 'Any' | 'Remote' | 'Hybrid' | 'Onsite'
 export type StatusView = 'New' | 'Applied' | 'All'
 export type JobStatus = 'seen' | 'applied'
+export type SortOrder = 'Newest' | 'Oldest' | 'Company A–Z'
 
 export interface Filters {
   emailOnly: boolean
@@ -19,6 +20,7 @@ export interface Filters {
   keywords: string // comma-separated, e.g. "typescript, design systems"
   workType: WorkType
   view: StatusView
+  sort: SortOrder
 }
 
 export const DEFAULT_FILTERS: Filters = {
@@ -27,6 +29,15 @@ export const DEFAULT_FILTERS: Filters = {
   keywords: '',
   workType: 'Any',
   view: 'New',
+  sort: 'Newest',
+}
+
+// How many filters differ from "show everything" — for the Filters button badge
+export function activeFilterCount(filters: Filters): number {
+  return (filters.emailOnly ? 1 : 0) +
+    filters.presets.length +
+    (filters.keywords.trim() ? 1 : 0) +
+    (filters.workType !== 'Any' ? 1 : 0)
 }
 
 export function matchedPresets(job: HNJob, presets: RolePreset[]): RolePreset[] {
@@ -67,4 +78,12 @@ export function filterJobs(jobs: HNJob[], filters: Filters, search: string): HNJ
     matchesRole(job, filters) &&
     (!query || job.text.toLowerCase().includes(query))
   )
+}
+
+export function sortJobs(jobs: HNJob[], sort: SortOrder): HNJob[] {
+  const sorted = [...jobs]
+  if (sort === 'Newest') sorted.sort((a, b) => b.postedAt.localeCompare(a.postedAt))
+  if (sort === 'Oldest') sorted.sort((a, b) => a.postedAt.localeCompare(b.postedAt))
+  if (sort === 'Company A–Z') sorted.sort((a, b) => a.company.localeCompare(b.company, undefined, { sensitivity: 'base' }))
+  return sorted
 }
