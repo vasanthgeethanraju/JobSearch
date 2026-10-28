@@ -30,6 +30,11 @@ export function extractEmails(text: string): string[] {
   return [...new Set(found.map(e => e.replace(/\.+$/, '').toLowerCase()))]
 }
 
+// People sometimes post the "Who wants to be hired?" template here by mistake
+function isCandidatePost(header: string, text: string): boolean {
+  return /^location\s*:/i.test(header) || /willing to relocate\s*:/i.test(text)
+}
+
 export function parseJob(comment: AlgoliaComment): HNJob | null {
   if (!comment.text) return null // deleted / dead
 
@@ -37,6 +42,7 @@ export function parseJob(comment: AlgoliaComment): HNJob | null {
   const doc = new DOMParser().parseFromString(comment.text.replace(/<p>/gi, '\n\n'), 'text/html')
   const text = doc.body.textContent?.trim() ?? ''
   const header = text.split('\n')[0].trim()
+  if (isCandidatePost(header, text)) return null
   const headerParts = header.split('|').map(p => p.trim()).filter(Boolean)
 
   // HN truncates long link text, so read the real URL from href
