@@ -18,5 +18,6 @@ export interface HNJob {
   hybrid: boolean
   emails: string[]
   links: string[]
+  careerLink: string | null // best guess at the apply / careers page
   text: string            // full post as plain text
 }

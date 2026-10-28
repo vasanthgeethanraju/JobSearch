@@ -13,10 +13,10 @@ function Pill({ active, onClick, children }: { active: boolean; onClick: () => v
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1.5 rounded-full border font-medium transition-colors ${
+      className={`cursor-pointer px-4 py-1.5 rounded-full border font-medium transition-colors ${
         active
           ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
-          : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white'
+          : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900'
       }`}
     >
       {children}
@@ -136,7 +136,7 @@ function HNJobs() {
 
           <button
             onClick={handleLoad}
-            className="bg-black dark:bg-white text-white dark:text-black text-lg font-bold px-6 rounded-lg"
+            className="cursor-pointer bg-black dark:bg-white text-white dark:text-black text-lg font-bold px-6 rounded-lg"
           >
             Load
           </button>
@@ -192,7 +192,7 @@ function HNJobs() {
                   <button
                     key={view}
                     onClick={() => updateFilters({ view })}
-                    className={`text-lg ${filters.view === view ? 'font-bold underline underline-offset-8' : 'text-gray-400'}`}
+                    className={`cursor-pointer text-lg ${filters.view === view ? 'font-bold underline underline-offset-8' : 'text-gray-400'}`}
                   >
                     {view} ({viewCount(view)})
                   </button>
@@ -201,7 +201,7 @@ function HNJobs() {
               {filters.view === 'New' && shown.length > 0 && (
                 <button
                   onClick={() => toggleStatus(shown.map(job => job.id), 'seen')}
-                  className="text-sm text-gray-400 hover:text-black dark:hover:text-white"
+                  className="cursor-pointer text-sm text-gray-400 hover:text-black dark:hover:text-white"
                 >
                   Mark all {shown.length} as seen
                 </button>
@@ -217,9 +217,17 @@ function HNJobs() {
           <div key={job.id} className="border border-black dark:border-white rounded-lg p-4 flex flex-col gap-2">
             <div className="flex justify-between gap-4">
               <h2 className="text-xl font-bold">{job.company}</h2>
-              <a href={job.hnUrl} target="_blank" rel="noreferrer" className="text-sm text-gray-400 hover:underline shrink-0">
-                {new Date(job.postedAt).toLocaleDateString()} · HN ↗
-              </a>
+              <span className="text-sm text-gray-400 shrink-0">
+                {new Date(job.postedAt).toLocaleDateString()}
+                {job.careerLink && (
+                  <>
+                    {' · '}
+                    <a href={job.careerLink} target="_blank" rel="noreferrer" className="hover:underline hover:text-black dark:hover:text-white">
+                      {new URL(job.careerLink).hostname.replace(/^www\./, '')} ↗
+                    </a>
+                  </>
+                )}
+              </span>
             </div>
 
             {job.roles.length > 0 && <p className="text-lg">{job.roles.join(' · ')}</p>}
@@ -241,7 +249,12 @@ function HNJobs() {
 
             <div className="flex items-center justify-between gap-4">
               <details className="flex-1">
-                <summary className="cursor-pointer text-sm text-gray-400">Full post</summary>
+                <summary className="cursor-pointer text-sm text-gray-400">
+                  Full post
+                  <a href={job.hnUrl} target="_blank" rel="noreferrer" className="ml-3 hover:underline hover:text-black dark:hover:text-white">
+                    HN ↗
+                  </a>
+                </summary>
                 <p className="mt-2 whitespace-pre-line text-sm">{job.text}</p>
               </details>
               <div className="flex gap-2 text-sm self-start">
@@ -249,10 +262,10 @@ function HNJobs() {
                   <button
                     key={status}
                     onClick={() => toggleStatus([job.id], status)}
-                    className={`px-3 py-1 rounded-full border capitalize ${
+                    className={`cursor-pointer px-3 py-1 rounded-full border capitalize transition-colors ${
                       statuses[job.id] === status
                         ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
-                        : 'border-gray-400 text-gray-400'
+                        : 'border-gray-400 text-gray-400 hover:border-black hover:text-black dark:hover:border-white dark:hover:text-white'
                     }`}
                   >
                     {status}
